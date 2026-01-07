@@ -5,6 +5,9 @@ from urllib.request import urlopen
 from werkzeug.utils import secure_filename
 import sqlite3
 
+from flask import Flask, request, jsonify
+import sqlite3
+
 app = Flask(__name__)                                                                                                                  
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Clé secrète pour les sessions
 
@@ -76,6 +79,39 @@ def enregistrer_client():
     conn.commit()
     conn.close()
     return redirect('/consultation/')  # Rediriger vers la page d'accueil après l'enregistrement
-                                                                                                                                       
+
+
+# --- Authentification simple ---
+def check_user_auth(username, password):
+    return username == "user" and password == "12345"
+
+# --- Nouvelle route ---
+@app.route('/fiche_nom/', methods=['GET'])
+def fiche_nom():
+    # Récupérer les paramètres
+    username = request.args.get('username')
+    password = request.args.get('password')
+    nom_client = request.args.get('nom')
+
+    # Vérifier authentification
+    if not check_user_auth(username, password):
+        return jsonify({"error": "Accès refusé"}), 403
+
+    # Connexion à la base
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Requête SQL
+    cursor.execute("SELECT * FROM clients WHERE nom = ?", (nom_client,))
+    result = cursor.fetchall()
+    conn.close()
+
+    # Retourner le résultat
+    if result:
+        return jsonify({"clients": result})
+    else:
+        return jsonify({"message": "Aucun client trouvé"})
+
+
 if __name__ == "__main__":
   app.run(debug=True)
