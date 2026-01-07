@@ -5,8 +5,11 @@ from urllib.request import urlopen
 from werkzeug.utils import secure_filename
 import sqlite3
 
+
+# app.py
 from flask import Flask, request, jsonify
 import sqlite3
+
 
 app = Flask(__name__)                                                                                                                  
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Clé secrète pour les sessions
@@ -81,36 +84,50 @@ def enregistrer_client():
     return redirect('/consultation/')  # Rediriger vers la page d'accueil après l'enregistrement
 
 
-# --- Authentification simple ---
+# --- Authentification "user" de l'exercice 2 ---
 def check_user_auth(username, password):
     return username == "user" and password == "12345"
 
-# --- Nouvelle route ---
+# (Optionnel) Route d'accueil
+@app.route('/')
+def hello():
+    return "Hello World!"
+
+# --- Nouvelle route : /fiche_nom/ ---
 @app.route('/fiche_nom/', methods=['GET'])
 def fiche_nom():
-    # Récupérer les paramètres
+    # On récupère les paramètres ?username=...&password=...&nom=...
     username = request.args.get('username')
     password = request.args.get('password')
-    nom_client = request.args.get('nom')
+    nom = request.args.get('nom')  # le nom du client à rechercher
 
-    # Vérifier authentification
+    # Contrôle d'accès (exercice 2) : user / 12345
     if not check_user_auth(username, password):
         return jsonify({"error": "Accès refusé"}), 403
 
-    # Connexion à la base
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
+    if not nom:
+        return jsonify({"error": "Paramètre 'nom' manquant"}), 400
 
-    # Requête SQL
-    cursor.execute("SELECT * FROM clients WHERE nom = ?", (nom_client,))
-    result = cursor.fetchall()
+    # Connexion à la base SQLite
+    conn = sqlite3.connect('database.db')
+    cur = conn.cursor()
+
+    # Recherche exacte sur le nom — requête paramétrée (sécurisée)
+    cur.execute("SELECT id, nom, email FROM clients WHERE nom = ?", (nom,))
+    rows = cur.fetchall()
     conn.close()
 
-    # Retourner le résultat
-    if result:
-        return jsonify({"clients": result})
+    # Formatage du résultat en JSON
+    clients = [{"id": r[0], "nom": r[1], "email": r[2]} for r in rows]
+
+    if clients:
+        return jsonify({"clients": clients}), 200
     else:
-        return jsonify({"message": "Aucun client trouvé"})
+        return jsonify({"message": "Aucun client trouvé"}), 200
+
+# Lancement local (utile si tu testes en local)
+if __name__ == "__main__":
+    app.run(debug=True)
 
 
 if __name__ == "__main__":
