@@ -161,6 +161,6 @@ def tasks_complete(task_id):
     conn.close()
     return redirect("/tasks")
 
-# Lancement local (utile si tu testes en local)
+
 if __name__ == "__main__":
     app.run(debug=True)
