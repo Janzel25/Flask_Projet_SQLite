@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mes tâches</title>
+</head>
+<body>
+
+<h1>Liste des tâches</h1>
+
+<a href="/tasks/add">➕ Ajouter une tâche</a>
+<hr>
+
+{% for t in tasks %}
+    <p>
+        <strong>{{ t.title }}</strong><br>
+        {{ t.description }}<br>
+        📅 {{ t.deadline }}<br>
+
+        {% if t.completed %}
+            ✅ Terminée
+        {% else %}
+            <a href="/tasks/complete/{{ t.id }}">✔️ Marquer terminée</a>
+        {% endif %}
+
+        |
+        <a href="/tasks/delete/{{ t.id }}">🗑️ Supprimer</a>
+    </p>
+    <hr>
+{% endfor %}
+
+</body>
+</html>
