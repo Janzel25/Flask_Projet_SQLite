@@ -125,10 +125,54 @@ def fiche_nom():
     else:
         return jsonify({"message": "Aucun client trouvé"}), 200
 
+
+@app.route("/tasks")
+def list_tasks():
+    conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM tasks ORDER BY id DESC")
+    tasks = c.fetchall()
+    conn.close()
+    return render_template("tasks_list.html", tasks=tasks)
+
+@app.route("/tasks/add", methods=["GET", "POST"])
+def add_task():
+    if request.method == "POST":
+        title = request.form["title"]
+        description = request.form["description"]
+        deadline = request.form["deadline"]
+
+        conn = sqlite3.connect("database.db")
+        c = conn.cursor()
+        c.execute("INSERT INTO tasks (title, description, deadline) VALUES (?, ?, ?)",
+                  (title, description, deadline))
+        conn.commit()
+        conn.close()
+
+        return redirect("/tasks")
+
+    return render_template("tasks_add.html")
+
+@app.route("/tasks/delete/<int:task_id>")
+def tasks_delete(task_id):
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+    c.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+    conn.commit()
+    conn.close()
+    return redirect("/tasks")
+
+@app.route("/tasks/complete/<int:task_id>")
+def tasks_complete(task_id):
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+    c.execute("UPDATE tasks SET completed = 1 WHERE id = ?", (task_id,))
+    conn.commit()
+    conn.close()
+    return redirect("/tasks")
+
 # Lancement local (utile si tu testes en local)
 if __name__ == "__main__":
     app.run(debug=True)
 
-
-if __name__ == "__main__":
-  app.run(debug=True)
