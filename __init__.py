@@ -175,7 +175,3 @@ def tasks_complete(task_id):
 # Lancement local (utile si tu testes en local)
 if __name__ == "__main__":
     app.run(debug=True)
-
-if __name__ == "__main__":
-    app.run(debug=True)
-
