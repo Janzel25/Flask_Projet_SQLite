@@ -114,7 +114,7 @@ def fiche_nom():
     else:
         return jsonify({"message": "Aucun client trouvé"}), 200
 
-
+# --- projet gestion tache ---
 @app.route("/tasks")
 def list_tasks():
     conn = sqlite3.connect("database.db")
