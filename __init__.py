@@ -82,11 +82,6 @@ def enregistrer_client():
 def check_user_auth(username, password):
     return username == "user" and password == "12345"
 
-# (Optionnel) Route d'accueil
-@app.route('/')
-def hello():
-    return "Hello World!"
-
 # --- Nouvelle route : /fiche_nom/ ---
 @app.route('/fiche_nom/', methods=['GET'])
 def fiche_nom():
